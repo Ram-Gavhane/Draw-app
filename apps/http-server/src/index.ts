@@ -1,6 +1,5 @@
 import express from "express";
-import * as z from "zod/v4"
-import { userSchema } from "./utils/zodSchema";
+import { userSchema, loginSchema } from "@repo/common/inputValidation";
 import { middleware } from "./middleware/middleware";
 import jwt from "jsonwebtoken";
 import 'dotenv/config';
@@ -15,12 +14,7 @@ app.use(express.json());
 
 app.post("/api/v1/signup", async function (req,res){
     const body = req.body;
-    const User =  z.object({
-        username:z.string(),
-        email:z.email(),
-        password:z.string()
-    });
-    const parsedData = User.safeParse(body);
+    const parsedData = userSchema.safeParse(body);
     if(parsedData.success){
         const hashedPassword = await bcrypt.hash(parsedData.data.password,3);
         const response = await client.user.create({
@@ -43,13 +37,11 @@ app.post("/api/v1/signup", async function (req,res){
 
 app.post("/api/v1/login",async function(req, res){
     const body = req.body;
-    const User =  z.object({
-        username:z.string(),
-        password:z.string()
-    });
-    const userData = User.safeParse(body);
+    const userData = loginSchema.safeParse(body);
     if(!userData.success){
-        res.send(userData.error);
+        res.status(411).json({
+            "message":"Invalid Inputs"
+        });
     }else{
         const user = await client.user.findFirst({
             where:{

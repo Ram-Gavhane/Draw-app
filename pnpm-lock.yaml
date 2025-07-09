@@ -27,6 +27,9 @@ importers:
 
   apps/http-server:
     dependencies:
+      '@repo/common':
+        specifier: workspace:*
+        version: link:../../packages/common
       '@repo/db':
         specifier: workspace:*
         version: link:../../packages/db
@@ -107,7 +110,11 @@ importers:
         specifier: ^8.18.2
         version: 8.18.2
 
-  packages/backend-common:
+  packages/common:
+    dependencies:
+      zod:
+        specifier: ^3.25.67
+        version: 3.25.67
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*

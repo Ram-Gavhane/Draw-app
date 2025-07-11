@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 import 'dotenv/config';
 import dotenv from "dotenv";
 dotenv.config();
-import { JWT_SECRET } from "./config";
+import { JWT_SECRET } from "@repo/common/config";
 import { client } from "@repo/db/client";
 import bcrypt from "bcrypt";
 
@@ -56,7 +56,7 @@ app.post("/api/v1/login",async function(req, res){
         }
         const passCheck = await bcrypt.compare(userData.data.password,user.password)
         if(passCheck){
-            const token = jwt.sign(userData.data.username, JWT_SECRET);
+            const token = jwt.sign({userId:user.id}, JWT_SECRET);
             res.json({
                 "message":"You are logged in",
                 "Token":token
@@ -71,11 +71,30 @@ app.post("/api/v1/login",async function(req, res){
 
 app.use(middleware)
 
-app.post("/create-room", function(req, res){
-    const name = req.userId;
-    res.json({
-        "username":name
-    });
+app.post("/create-room", async function(req, res){
+    const userId = req.userId;
+    const roomName = req.body.roomName;
+    console.log(userId);
+    if(!userId){
+        res.json({
+            "message":"Login in again and retry"
+        })
+        return; 
+    }
+    try{
+        const response = await client.room.create({
+            data:{
+                slug: roomName,
+                adminId: userId
+            }
+        })
+        res.json({
+        "message":"Room Created",
+        "Room ID":response.id
+        })
+    }catch(e){
+        console.log(e);
+    }    
 });
 
 app.post("/join-room", function(req, res){

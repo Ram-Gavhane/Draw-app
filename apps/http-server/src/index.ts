@@ -8,8 +8,10 @@ dotenv.config();
 import { JWT_SECRET } from "@repo/common/config";
 import { client } from "@repo/db/client";
 import bcrypt from "bcrypt";
+import cors from "cors";
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 app.post("/api/v1/signup", async function (req,res){
@@ -17,7 +19,7 @@ app.post("/api/v1/signup", async function (req,res){
     const parsedData = userSchema.safeParse(body);
     if(parsedData.success){
         const hashedPassword = await bcrypt.hash(parsedData.data.password,3);
-        const response = await client.user.create({
+        await client.user.create({
             data:{
                 username: body.username,
                 email: body.email,
@@ -57,9 +59,10 @@ app.post("/api/v1/login",async function(req, res){
         const passCheck = await bcrypt.compare(userData.data.password,user.password)
         if(passCheck){
             const token = jwt.sign({userId:user.id}, JWT_SECRET);
+            console.log(token)
             res.json({
                 "message":"You are logged in",
-                "Token":token
+                "token": token
             });
         }else{
             res.status(411).json({
@@ -103,5 +106,19 @@ app.post("/join-room", function(req, res){
         "username":name
     });
 });
+
+app.get("/rooms", async function (req, res) {
+    const userId = req.userId;
+    console.log(userId)
+    const response = await client.room.findMany({
+        where:{
+            adminId: userId
+        }
+    })
+    
+    res.json({
+        "rooms": response
+    });
+})
 
 app.listen(3001);

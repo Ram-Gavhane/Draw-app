@@ -9,6 +9,7 @@ import { JWT_SECRET } from "@repo/common/config";
 import { client } from "@repo/db/client";
 import bcrypt from "bcrypt";
 import cors from "cors";
+import { number } from "zod/v4";
 
 const app = express();
 app.use(cors());
@@ -59,7 +60,6 @@ app.post("/api/v1/login",async function(req, res){
         const passCheck = await bcrypt.compare(userData.data.password,user.password)
         if(passCheck){
             const token = jwt.sign({userId:user.id}, JWT_SECRET);
-            console.log(token)
             res.json({
                 "message":"You are logged in",
                 "token": token
@@ -77,7 +77,6 @@ app.use(middleware)
 app.post("/create-room", async function(req, res){
     const userId = req.userId;
     const roomName = req.body.roomName;
-    console.log(userId);
     if(!userId){
         res.json({
             "message":"Login in again and retry"
@@ -100,6 +99,30 @@ app.post("/create-room", async function(req, res){
     }    
 });
 
+app.get("/chats/:roomId", async function (req, res){
+     try {
+        const roomId = Number(req.params.roomId);
+        const messages = await client.chat.findMany({
+            where: {
+                roomId: roomId
+            },
+            orderBy: {
+                id: "desc"
+            },
+            take: 1000
+        });
+
+        res.json({
+            messages
+        })
+    } catch(e) {
+        console.log(e);
+        res.json({
+            messages: []
+        })
+    }
+})
+
 app.post("/join-room", function(req, res){
     const name = req.userId;
     res.json({
@@ -109,7 +132,6 @@ app.post("/join-room", function(req, res){
 
 app.get("/rooms", async function (req, res) {
     const userId = req.userId;
-    console.log(userId)
     const response = await client.room.findMany({
         where:{
             adminId: userId

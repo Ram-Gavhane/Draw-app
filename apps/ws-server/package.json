@@ -12,6 +12,7 @@
     "@repo/common":"workspace:*",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/ws": "^8.18.1",
+    "@repo/db":"workspace:*",
     "jsonwebtoken": "^9.0.2",
     "ws": "^8.18.2"
   },

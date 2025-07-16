@@ -27,7 +27,7 @@ export default function Signup(){
                             username,
                             password
                         })
-                        alert(response.data.token);
+                        alert(response.data.message);
                         localStorage.setItem('token', response.data.token);
                         router.push('./dashboard')
                     }} className="bg-black h-10 rounded-2xl px-4">Sign up</button>

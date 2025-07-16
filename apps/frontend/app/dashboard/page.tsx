@@ -1,13 +1,23 @@
-import axios from "axios"
-import { useEffect } from "react"
+"use client";
 
-export default async function Dashboard(){
+import { useEffect } from "react";
+import Rooms from "../components/Rooms";
+import { useRooms } from "../hooks/useRooms";
 
-    useEffect(()=>{
-        axios.get('http://localhost:3001/rooms',{headers: { 'Authorization':localStorage.getItem('token')}})
-    },[])
+export default function Dashboard(){
 
-    return <div className="">
-        
+    const {content, getcontents} = useRooms();
+    
+    useEffect(() => {
+        getcontents();
+    }, [])
+
+    return <div className="w-screen h-screen">
+        Welcome
+        <div className="h-64 w-60 p-4 ml-8 mt-14 text-md rounded-xl shadow shadow-gray-400">
+            {content.map(({slug}) => <Rooms 
+            slug={slug}
+            />)}
+        </div>
     </div>
 }

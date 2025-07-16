@@ -1,5 +1,6 @@
 import { WebSocket, WebSocketServer } from "ws";
 import { userValidation } from "./userValidation";
+import { client } from "@repo/db/client";
 
 const wss = new WebSocketServer({ port: 8080 });
 
@@ -31,14 +32,13 @@ wss.on('connection', function connection(ws, request) {
     rooms:[]
   })
 
-  ws.on('message', function message(data) {
+  ws.on('message', async function message(data) {
     let parsedData;
     if(typeof data != "string"){
       parsedData = JSON.parse(data.toString());
     }else{
       parsedData = JSON.parse(data);
     }
-
     if(parsedData.type == "join-room"){
       const user = users.find(x=> x.ws === ws);
       if(!user){
@@ -62,10 +62,21 @@ wss.on('connection', function connection(ws, request) {
     if(parsedData.type == "chat"){
       const roomId = parsedData.roomId;
       const message = parsedData.message;
+      await client.chat.create({
+        data:{
+          roomId:Number(roomId),
+          message,
+          userId
+        }
+      })
 
       users.forEach(user=>{
-        if(user.rooms.includes(roomId) && user.ws != ws){
-          user.ws.send(JSON.stringify(message));
+        if(user.rooms.includes(roomId)){
+          user.ws.send(JSON.stringify({
+            type: "chat",
+            message: message,
+            roomId
+          }));
         }
       })
     }

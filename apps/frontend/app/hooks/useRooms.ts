@@ -4,7 +4,11 @@ import { useEffect, useState } from "react";
 export function useRooms(){
     const [content, setcontent] = useState([]);
     function getcontents(){
-        axios.get('http://localhost:3001/rooms',{ headers: { 'Authorization':localStorage.getItem('token')}}).then((response)=>{
+        axios.get('http://localhost:3001/rooms',{ 
+            headers: { 
+                'Authorization':localStorage.getItem('token')
+            }
+        }).then((response)=>{
             setcontent(response.data.rooms);
         })
     }

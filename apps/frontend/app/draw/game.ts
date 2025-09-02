@@ -77,6 +77,12 @@ export class Game {
         this.ctx.fillStyle = "rgba(0, 0, 0)"
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
+        // Common stroke style
+        this.ctx.strokeStyle = "rgba(255, 255, 255)";
+        this.ctx.lineWidth = 2;
+        this.ctx.lineJoin = "round";
+        this.ctx.lineCap = "round";
+
         this.existingShapes.map((shape) => {
             if (shape.type === "rect") {
                 this.ctx.strokeStyle = "rgba(255, 255, 255)"
@@ -148,10 +154,18 @@ export class Game {
                 };
             }
         }else if(this.selectedTool === "pencil") {
-            this.currentPencilStroke = [{ x: this.startX, y: this.startY }];
+            if (this.currentPencilStroke.length > 1) {
+                shape = {
+                    type: "pencil",
+                    points: [...this.currentPencilStroke]
+                }
+            }
+            // reset temp stroke
+            this.currentPencilStroke = [];
         }
 
         if (!shape) {
+            this.clearCanvas();
             return;
         }
 
@@ -162,6 +176,7 @@ export class Game {
             message,
             roomId: this.roomId
         }))
+        this.clearCanvas();
     }
     mouseMoveHandler = (e: MouseEvent) => {
         if (this.clicked) {
@@ -173,6 +188,9 @@ export class Game {
             
             this.clearCanvas();
             this.ctx.strokeStyle = "rgba(255, 255, 255)"
+            this.ctx.lineWidth = 2;
+            this.ctx.lineJoin = "round";
+            this.ctx.lineCap = "round";
             const selectedTool = this.selectedTool;
             console.log(selectedTool)
             if (selectedTool === "rect") {
@@ -194,6 +212,16 @@ export class Game {
                 this.ctx.arc(this.startX, this.startY, radius, 0, Math.PI * 2);
                 this.ctx.stroke();
                 this.ctx.closePath();
+            } else if (selectedTool === "pencil") {
+                // Append current point and draw live stroke
+                this.currentPencilStroke.push({ x: currentX, y: currentY });
+                if (this.currentPencilStroke.length > 0) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(this.currentPencilStroke[0].x, this.currentPencilStroke[0].y);
+                    this.currentPencilStroke.forEach((point) => this.ctx.lineTo(point.x, point.y));
+                    this.ctx.stroke();
+                    this.ctx.closePath();
+                }
             }
         }
     }

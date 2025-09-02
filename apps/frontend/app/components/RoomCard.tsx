@@ -12,15 +12,16 @@ export default function RoomCard(){
     }, [])
 
     return <div>
-        <div className=" w-60 p-4 ml-10 mt-14 text-md rounded-xl shadow shadow-gray-400">
-            Room you have created:
-            <div className="mt-2.5">
+        <div className="w-64 p-6 ml-10 mt-14 rounded-xl bg-gray-900 border border-gray-800 text-gray-100 shadow-lg shadow-black/20">
+            <div className="text-lg font-semibold tracking-tight">Your Rooms</div>
+            <div className="mt-3 space-y-2">
                 {content.map((x:
                 {
                     id:number,
                     slug:string
                 }
-            ) => <Rooms id={x.id}
+            ) => <Rooms key={x.id}
+            id={x.id}
             slug={x.slug}
             />)}
             </div>

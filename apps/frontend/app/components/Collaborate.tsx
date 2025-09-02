@@ -10,11 +10,13 @@ export function Collaborate(){
     const joinRef = useRef<HTMLInputElement>(null);
     const router = useRouter();
 
-    return <div className="h-64 w-[500px] p-4 ml-10 mt-14 text-md rounded-xl shadow shadow-gray-400">
-        Collaborate
-        <div className="grid grid-cols-2 h-48 px-4">
-            <div className="border-r flex flex-col justify-center items-center pr-6">
-                <input type="text" ref={canvasNameRef} placeholder="Canvas Name" className="w-40 px-6 bg-white text-black border py-1.5 rounded-xl"/>
+    return <div className="w-[500px] p-6 ml-10 mt-14 rounded-xl bg-gray-900 border border-gray-800 text-gray-100 shadow-lg shadow-black/20">
+        <div className="mb-4 flex items-center justify-between">
+            <div className="text-lg font-semibold tracking-tight">Collaborate</div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+            <div className="border-r border-gray-800 pr-6 flex flex-col justify-center items-center">
+                <input type="text" ref={canvasNameRef} placeholder="Canvas name" className="w-48 px-3 py-2 rounded-md bg-gray-800/60 text-gray-100 placeholder-gray-400 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition"/>
                 <button 
                 onClick={()=>{
                     axios.post(`${BACKEND_URL}/create-room`,{slug:canvasNameRef.current?.value},{
@@ -24,14 +26,14 @@ export function Collaborate(){
                         
                     })
                 }}
-                className="mt-4 text-black font-bold rounded-xl bg-white px-4 py-1.5">
+                className="mt-4 rounded-md bg-gray-100 text-gray-900 px-3 py-2 text-sm font-medium hover:bg-gray-200 transition-colors">
                     Create Canvas
                 </button>
             </div>
-            <div className="flex flex-col justify-center items-center ml-3">
-                <input type="text" ref={joinRef} placeholder="Canvas Name" className="w-40 px-6 bg-white text-black border py-1.5 rounded-xl"/>
+            <div className="flex flex-col justify-center items-center pl-2">
+                <input type="text" ref={joinRef} placeholder="Canvas name" className="w-48 px-3 py-2 rounded-md bg-gray-800/60 text-gray-100 placeholder-gray-400 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition"/>
                 <button 
-                className="mt-4 text-black font-bold rounded-xl bg-white px-4 py-1.5"
+                className="mt-4 rounded-md bg-gray-100 text-gray-900 px-3 py-2 text-sm font-medium hover:bg-gray-200 transition-colors"
                 onClick={()=>{
                     axios.post(`${BACKEND_URL}/join-room`,{slug:joinRef.current?.value},{
                         headers:{

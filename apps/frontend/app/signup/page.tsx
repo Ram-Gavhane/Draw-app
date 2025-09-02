@@ -1,37 +1,40 @@
 "use client";
 
 import axios from "axios";
-import { useRouter } from "next/router";
 import { useRef } from "react";
+import { Navbar } from "../components/Navbar";
 
 export default function Signup(){
     const usernameRef = useRef<HTMLInputElement>(null)
     const emailRef = useRef<HTMLInputElement>(null)
     const passRef = useRef<HTMLInputElement>(null)
 
-    return <div className="w-screen h-screen flex justify-center items-center bg-black font-mono">
-            <div className="w-[320px] h-[360px] bg-white text-black flex flex-col px-4 py-4 rounded-2xl">
-                <div className="text-2xl border-b-2 p-3">
-                    Signup
+    return <div className="min-h-screen font-mono bg-gray-800 flex flex-col">
+            <Navbar hideLogout title="kanvas" />
+            <div className="flex-1 w-screen flex justify-center items-center">
+                <div className="w-[360px] bg-gray-900 border border-gray-800 text-gray-100 flex flex-col px-5 py-6 rounded-xl shadow-lg shadow-black/20">
+                    <div className="text-xl font-semibold tracking-tight mb-2 px-1">
+                        Signup
+                    </div>
+                    <div className="flex flex-col gap-4 mt-4 px-1">
+                        <input ref={usernameRef} className="px-3 py-2 rounded-md bg-gray-800/60 text-gray-100 placeholder-gray-400 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition" type="text" placeholder="Username"/>
+                        <input ref={emailRef} className="px-3 py-2 rounded-md bg-gray-800/60 text-gray-100 placeholder-gray-400 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition" type="text" placeholder="Email"/>
+                        <input ref={passRef} className="px-3 py-2 rounded-md bg-gray-800/60 text-gray-100 placeholder-gray-400 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition" type="password" placeholder="Password"/>
+                    </div>
+                    <div className="flex justify-center mt-6">
+                        <button onClick={async ()=>{
+                            const username = usernameRef.current?.value
+                            const email = emailRef.current?.value
+                            const password = passRef.current?.value
+                            const response = await axios.post("http://localhost:3001/api/v1/signup",{
+                                username,
+                                email,
+                                password
+                            })
+                        }} className="rounded-md bg-gray-100 text-gray-900 px-4 py-2 text-sm font-medium hover:bg-gray-200 transition-colors">Sign up</button>
+                    </div>
+                    <p className="text-center text-sm mt-3 text-gray-300">Already have an account? <a className="text-blue-400 hover:text-blue-300" href="/login">Login</a></p>
                 </div>
-                <div className="flex flex-col gap-4 mt-10 px-5">
-                    <input ref={usernameRef} className="border-1 px-4 py-1.5 rounded-xl " type="text" placeholder="Username"/>
-                    <input ref={emailRef} className="border-1 px-4 py-1.5 rounded-xl " type="text" placeholder="Email"/>
-                    <input ref={passRef} className="border-1 px-4 py-1.5 rounded-xl " type="password" placeholder="Password"/>
-                </div>
-                <div className="flex justify-center mt-7  text-white">
-                    <button onClick={async ()=>{
-                        const username = usernameRef.current?.value
-                        const email = emailRef.current?.value
-                        const password = passRef.current?.value
-                        const response = await axios.post("http://localhost:3001/api/v1/signup",{
-                            username,
-                            email,
-                            password
-                        })
-                    }} className="bg-black h-10 rounded-2xl px-4">Sign up</button>
-                </div>
-                <h6 className="text-center text-sm mt-2">Already have an account? <a className="text-blue-500" href="/login">Login</a></h6>
             </div>
         </div>
     

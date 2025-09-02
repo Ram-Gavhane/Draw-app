@@ -15,6 +15,12 @@ type Shape = {
 } | {
     type: "pencil";
     points: { x: number; y: number }[]
+} | {
+    type: "arrow";
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
 }
 
 export class Game {
@@ -101,11 +107,36 @@ export class Game {
         this.ctx.setTransform(this.scale, 0, 0, this.scale, this.offsetX, this.offsetY);
     }
 
+    private drawArrow(startX: number, startY: number, endX: number, endY: number) {
+        // line
+        this.ctx.beginPath();
+        this.ctx.moveTo(startX, startY);
+        this.ctx.lineTo(endX, endY);
+        this.ctx.stroke();
+        this.ctx.closePath();
+
+        // arrow head
+        const headLength = 10 / this.scale; // keep screen-size consistent
+        const angle = Math.atan2(endY - startY, endX - startX);
+        const leftX = endX - headLength * Math.cos(angle - Math.PI / 6);
+        const leftY = endY - headLength * Math.sin(angle - Math.PI / 6);
+        const rightX = endX - headLength * Math.cos(angle + Math.PI / 6);
+        const rightY = endY - headLength * Math.sin(angle + Math.PI / 6);
+
+        this.ctx.beginPath();
+        this.ctx.moveTo(endX, endY);
+        this.ctx.lineTo(leftX, leftY);
+        this.ctx.moveTo(endX, endY);
+        this.ctx.lineTo(rightX, rightY);
+        this.ctx.stroke();
+        this.ctx.closePath();
+    }
+
     clearCanvas() {
         // Reset transform to clear in screen space
         this.ctx.setTransform(1, 0, 0, 1, 0, 0);
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.ctx.fillStyle = "rgba(0, 0, 0)";
+        this.ctx.fillStyle = "#0a0a0a"; // gray-950
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         // Draw in world space with current transform
@@ -134,7 +165,9 @@ export class Game {
                     this.ctx.stroke();
                     this.ctx.closePath();
                 }
-            } 
+            } else if (shape.type === "arrow") {
+                this.drawArrow(shape.startX, shape.startY, shape.endX, shape.endY);
+            }
         })
     }
 
@@ -201,6 +234,16 @@ export class Game {
                 }
             }
             this.currentPencilStroke = [];
+        } else if (this.selectedTool === "arrow") {
+            if (Math.hypot(endX - this.startX, endY - this.startY) > 1) {
+                shape = {
+                    type: "arrow",
+                    startX: this.startX,
+                    startY: this.startY,
+                    endX,
+                    endY
+                }
+            }
         }
 
         if (!shape) {
@@ -257,6 +300,8 @@ export class Game {
                     this.ctx.stroke();
                     this.ctx.closePath();
                 }
+            } else if (selectedTool === "arrow") {
+                this.drawArrow(this.startX, this.startY, currentX, currentY);
             }
         }
     }

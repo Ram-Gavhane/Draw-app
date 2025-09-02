@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { IconButton } from "./iconButton";
-import { Circle, Pencil, RectangleHorizontalIcon } from "lucide-react";
+import { Circle, Pencil, RectangleHorizontalIcon, ArrowRight } from "lucide-react";
 import { Game } from "../draw/game";
+import { useRouter } from "next/navigation";
 
-export type Tool = "circle" | "rect" | "pencil";
+export type Tool = "circle" | "rect" | "pencil" | "arrow";
 
 export function Canvas({
     roomId,
@@ -15,6 +16,7 @@ export function Canvas({
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [game, setGame] = useState<Game>();
     const [selectedTool, setSelectedTool] = useState<Tool>("circle")
+    const router = useRouter();
 
     useEffect(() => {
         game?.setTool(selectedTool);
@@ -40,6 +42,19 @@ export function Canvas({
     }}>
         <canvas ref={canvasRef} width={window.innerWidth} height={window.innerHeight}></canvas>
         <Topbar setSelectedTool={setSelectedTool} selectedTool={selectedTool} />
+        <div style={{
+            position: "fixed",
+            top: 10,
+            right: 10
+        }}>
+            <button
+                type="button"
+                className="rounded-md border border-gray-800 bg-gray-900/90 px-3 py-2 text-sm text-gray-100 hover:bg-gray-800 transition-colors"
+                onClick={() => router.push('/dashboard')}
+            >
+                Exit Canvas
+            </button>
+        </div>
     </div>
 }
 
@@ -73,6 +88,13 @@ function Topbar({selectedTool, setSelectedTool}: {
                     }} 
                     activated={selectedTool === "circle"} 
                     icon={<Circle />}
+                />
+                <IconButton 
+                    onClick={() => {
+                        setSelectedTool("arrow")
+                    }} 
+                    activated={selectedTool === "arrow"} 
+                    icon={<ArrowRight />}
                 />
             </div>
         </div>

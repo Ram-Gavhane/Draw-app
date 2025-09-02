@@ -19,7 +19,7 @@ export default function Signup(){
                     <input ref={emailRef} className="border-1 px-4 py-1.5 rounded-xl " type="text" placeholder="Email"/>
                     <input ref={passRef} className="border-1 px-4 py-1.5 rounded-xl " type="password" placeholder="Password"/>
                 </div>
-                <div className="flex justify-center mt-11  text-white">
+                <div className="flex justify-center mt-7  text-white">
                     <button onClick={async ()=>{
                         const username = usernameRef.current?.value
                         const email = emailRef.current?.value
@@ -29,9 +29,9 @@ export default function Signup(){
                             email,
                             password
                         })
-                        alert(response.data.message);
                     }} className="bg-black h-10 rounded-2xl px-4">Sign up</button>
                 </div>
+                <h6 className="text-center text-sm mt-2">Already have an account? <a className="text-blue-500" href="/login">Login</a></h6>
             </div>
         </div>
     

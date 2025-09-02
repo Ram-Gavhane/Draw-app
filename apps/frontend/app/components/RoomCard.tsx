@@ -12,8 +12,8 @@ export default function RoomCard(){
     }, [])
 
     return <div>
-        <div className="h-64 w-60 p-4 ml-10 mt-14 text-md rounded-xl shadow shadow-gray-400">
-            Room you have joined:
+        <div className=" w-60 p-4 ml-10 mt-14 text-md rounded-xl shadow shadow-gray-400">
+            Room you have created:
             <div className="mt-2.5">
                 {content.map((x:
                 {

@@ -14,10 +14,7 @@ type Shape = {
     radius: number;
 } | {
     type: "pencil";
-    startX: number;
-    startY: number;
-    endX: number;
-    endY: number;
+    points: { x: number; y: number }[]
 }
 
 export class Game {
@@ -30,7 +27,10 @@ export class Game {
     private startX = 0;
     private startY = 0;
     private selectedTool: Tool = "circle";
-
+    private activeShape: Shape | null = null;
+    private currentPencilStroke: { x: number; y: number }[] = [];
+    private currentMouseX: number = 0;
+    private currentMouseY: number = 0;
     socket: WebSocket;
 
     constructor(canvas: HTMLCanvasElement, roomId: string, socket: WebSocket) {
@@ -46,14 +46,12 @@ export class Game {
     }
     
     destroy() {
-        this.canvas.removeEventListener("mousedown", this.mouseDownHandler)
-
-        this.canvas.removeEventListener("mouseup", this.mouseUpHandler)
-
-        this.canvas.removeEventListener("mousemove", this.mouseMoveHandler)
+        this.canvas.removeEventListener("mousedown", this.mouseDownHandler);
+        this.canvas.removeEventListener("mouseup", this.mouseUpHandler);
+        this.canvas.removeEventListener("mousemove", this.mouseMoveHandler);
     }
 
-    setTool(tool: "circle" | "pencil" | "rect") {
+    setTool(tool: Tool) {
         this.selectedTool = tool;
     }
 
@@ -68,7 +66,6 @@ export class Game {
             console.log(message);
             if (message.type == "chat") {
                 const parsedShape = JSON.parse(message.message);
-                console.log(parsedShape);
                 this.existingShapes.push(parsedShape)
                 this.clearCanvas();
             }
@@ -89,39 +86,69 @@ export class Game {
                 this.ctx.arc(shape.centerX, shape.centerY, Math.abs(shape.radius), 0, Math.PI * 2);
                 this.ctx.stroke();
                 this.ctx.closePath();                
-            }
+            }else if (shape.type === "pencil") {
+                if (shape.points.length > 0) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(shape.points[0].x, shape.points[0].y);
+                    shape.points.forEach((point) => this.ctx.lineTo(point.x, point.y));
+                    this.ctx.stroke();
+                    this.ctx.closePath();
+                }
+            } 
         })
     }
 
-    mouseDownHandler = (e) => {
+    mouseDownHandler = (e: MouseEvent) => {
         this.clicked = true
-        this.startX = e.clientX
-        this.startY = e.clientY
+        const rect = this.canvas.getBoundingClientRect();
+        this.startX = e.clientX - rect.left;
+        this.startY = e.clientY - rect.top;
+        this.currentMouseX = this.startX;
+        this.currentMouseY = this.startY;
+
+        if (this.selectedTool === "pencil") {
+            this.currentPencilStroke = [{ x: this.startX, y: this.startY }];
+        }
     }
-    mouseUpHandler = (e) => {
-        this.clicked = false
-        const width = e.clientX - this.startX;
-        const height = e.clientY - this.startY;
+    mouseUpHandler = (e: MouseEvent) => {
+         this.clicked = false;
+        const rect = this.canvas.getBoundingClientRect();
+        const endX = e.clientX - rect.left;
+        const endY = e.clientY - rect.top;
 
         const selectedTool = this.selectedTool;
         let shape: Shape | null = null;
         if (selectedTool === "rect") {
-
-            shape = {
-                type: "rect",
-                x: this.startX,
-                y: this.startY,
-                height,
-                width
+            // Calculate width and height as the difference between start and end points
+            const width = endX - this.startX;
+            const height = endY - this.startY;
+            
+            // Ensure positive dimensions and correct positioning
+            if (Math.abs(width) > 1 && Math.abs(height) > 1) {
+                shape = {
+                    type: "rect",
+                    x: this.startX,
+                    y: this.startY ,
+                    width: Math.abs(width),
+                    height: Math.abs(height)
+                };
             }
         } else if (selectedTool === "circle") {
-            const radius = Math.max(width, height) / 2;
-            shape = {
-                type: "circle",
-                radius: radius,
-                centerX: this.startX + radius,
-                centerY: this.startY + radius,
+            // Calculate radius based on distance from start point
+            const deltaX = endX - this.startX;
+            const deltaY = endY - this.startY;
+            const radius = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            
+            if (radius > 1) {
+                shape = { 
+                    type: "circle", 
+                    centerX: this.startX, 
+                    centerY: this.startY, 
+                    radius 
+                };
             }
+        }else if(this.selectedTool === "pencil") {
+            this.currentPencilStroke = [{ x: this.startX, y: this.startY }];
         }
 
         if (!shape) {
@@ -136,24 +163,37 @@ export class Game {
             roomId: this.roomId
         }))
     }
-    mouseMoveHandler = (e) => {
+    mouseMoveHandler = (e: MouseEvent) => {
         if (this.clicked) {
-            const width = e.clientX - this.startX;
-            const height = e.clientY - this.startY;
+            const rect = this.canvas.getBoundingClientRect();
+            const currentX = e.clientX - rect.left;
+            const currentY = e.clientY - rect.top;
+            const width = currentX - this.startX;
+            const height = currentY - this.startY;
+            
             this.clearCanvas();
             this.ctx.strokeStyle = "rgba(255, 255, 255)"
             const selectedTool = this.selectedTool;
             console.log(selectedTool)
             if (selectedTool === "rect") {
-                this.ctx.strokeRect(this.startX, this.startY, width, height);   
+                // Draw rectangle with proper positioning for negative dimensions
+                const x = width >= 0 ? this.startX : currentX;
+                const y = height >= 0 ? this.startY : currentY;
+                this.ctx.strokeRect(x, y, Math.abs(width), Math.abs(height));
             } else if (selectedTool === "circle") {
-                const radius = Math.max(width, height) / 2;
-                const centerX = this.startX + radius;
-                const centerY = this.startY + radius;
+                // Calculate radius based on distance from start point
+                const deltaX = e.clientX - this.startX;
+                const deltaY = e.clientY - this.startY;
+                const radius = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                
+                // Set stroke style for circle
+                this.ctx.strokeStyle = "rgba(255, 255, 255)";
+                
+                // Draw the circle from the start point with calculated radius
                 this.ctx.beginPath();
-                this.ctx.arc(centerX, centerY, Math.abs(radius), 0, Math.PI * 2);
+                this.ctx.arc(this.startX, this.startY, radius, 0, Math.PI * 2);
                 this.ctx.stroke();
-                this.ctx.closePath();                
+                this.ctx.closePath();
             }
         }
     }

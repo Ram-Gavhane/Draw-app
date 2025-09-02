@@ -1,3 +1,4 @@
+import { Collaborate } from "../components/Collaborate";
 import RoomCard from "../components/RoomCard";
 
 export default function Dashboard(){
@@ -7,6 +8,10 @@ export default function Dashboard(){
         <div className="text-3xl pt-9 pl-7">
             Welcome !
         </div>
-        <RoomCard />
+        <div className="flex">
+            <RoomCard />
+            <Collaborate />
+        </div>
+        
     </div>
 }

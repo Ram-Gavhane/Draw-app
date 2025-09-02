@@ -76,7 +76,7 @@ app.use(middleware)
 
 app.post("/create-room", async function(req, res){
     const userId = req.userId;
-    const roomName = req.body.roomName;
+    const roomName = req.body.slug;
     if(!userId){
         res.json({
             "message":"Login in again and retry"
@@ -123,11 +123,31 @@ app.get("/chats/:roomId", async function (req, res){
     }
 })
 
-app.post("/join-room", function(req, res){
-    const name = req.userId;
-    res.json({
-        "username":name
-    });
+app.post("/join-room", async function(req, res){
+    const slug = req.body.slug;
+
+    try{
+        const response = await client.room.findFirst({
+            where:{
+                slug
+            }
+        })
+
+        if(!response){
+            res.json({
+                "message":"Canvas doesn't exist",
+                "id":null
+            });
+            return;
+        }
+        res.json({
+            "message":"Canvas created",
+            "roomId":response.id
+        })
+    }catch(e){
+        console.log(e);
+    }
+    
 });
 
 app.get("/rooms", async function (req, res) {

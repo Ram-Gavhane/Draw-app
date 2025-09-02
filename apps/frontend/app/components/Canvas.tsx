@@ -60,12 +60,20 @@ function Topbar({selectedTool, setSelectedTool}: {
                     activated={selectedTool === "pencil"}
                     icon={<Pencil />}
                 />
-                <IconButton onClick={() => {
-                    setSelectedTool("rect")
-                }} activated={selectedTool === "rect"} icon={<RectangleHorizontalIcon />} ></IconButton>
-                <IconButton onClick={() => {
-                    setSelectedTool("circle")
-                }} activated={selectedTool === "circle"} icon={<Circle />}></IconButton>
+                <IconButton 
+                    onClick={() => {
+                        setSelectedTool("rect")
+                }} 
+                    activated={selectedTool === "rect"} 
+                    icon={<RectangleHorizontalIcon />}
+                 />
+                <IconButton 
+                    onClick={() => {
+                        setSelectedTool("circle")
+                    }} 
+                    activated={selectedTool === "circle"} 
+                    icon={<Circle />}
+                />
             </div>
         </div>
 }
